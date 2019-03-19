@@ -1,9 +1,11 @@
 package com.charleychen.testscripts;
 
+import com.charleychen.pojoclass.AddUser;
 import com.charleychen.pojoclass.GetUserList;
 import com.charleychen.pojoclass.SimpleUser;
 import com.charleychen.utils.EndpointURL;
 import com.charleychen.utils.URL;
+import com.charleychen.utils.WebServicesUtil;
 import com.charleychen.webservices.methods.Webservices;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -47,6 +49,7 @@ public class TC_001 {
 
     @Test
     public void verifyGetCountryById() {
+        WebServicesUtil.logintoapp();
         String url = URL.reqres + EndpointURL.SINGLE_USER.getResourcePath("2");
         response = Webservices.Get(url);
         System.out.println(url);
@@ -68,13 +71,38 @@ public class TC_001 {
     }
 
     @DataProvider(name = "data")
-    public  Object[][] getUserById(){
+    public Object[][] getUserById() {
         Object[][] result = new Object[1][2];
-        for (int i = 0; i < result.length; i++){
+        for (int i = 0; i < result.length; i++) {
             result[i][0] = "0";
             result[i][1] = "0";
             result[i][2] = "0";
         }
         return result;
+    }
+
+
+    @DataProvider(name = "addUser")
+    public Object[][] addUser() {
+        Object[][] result = new Object[2][1];
+        result[0][0] = "{\"name\":\"morpheus\",\"job\":\"leader\"}";
+        result[1][0] = "{\"name1\":\"morpheus1\",\"job1\":\"leader1\"}";
+        return result;
+    }
+
+    @Test(dataProvider = "addUser")
+    public void testAddUser(String json){
+
+        Gson gson = new GsonBuilder().create();
+        AddUser addUser;
+        String url = URL.reqres + EndpointURL.CREATE.getResourcePath();
+        Response response = Webservices.Post(url, json);
+        System.out.println(response);
+        if (response.statusCode() == 201){
+            addUser = gson.fromJson(response.getBody().asString(), AddUser.class);
+            Assert.assertEquals(addUser.getName(), "morpheus");
+            Assert.assertEquals(addUser.getJob(), "leader");
+            System.out.println(response.getBody().asString());
+        }
     }
 }
